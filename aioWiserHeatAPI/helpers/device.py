@@ -146,7 +146,24 @@ class _WiserDevice(object):
     def signal(self) -> _WiserSignalStrength:
         """Get zwave network information"""
         return _WiserSignalStrength(self._data)
-
+    
+#Added by LGO    
+# endpoint Zigbee
+    @property
+    def endpoint(self) -> int:
+#        """Get endpoint"""
+        return self._device_type_data.get("Endpoint", 0)
+# Device type Zigbee
+    @property
+    def type_comm(self) -> str:
+#        """Get type of zigbee device """
+        return self._data.get("Type", TEXT_UNKNOWN)    
+# UUID Zigbee
+    @property
+    def uuid(self) -> str:
+#        """Get UUID zigbee"""
+        return self._device_type_data.get("UUID", TEXT_UNKNOWN)
+# END Added by LGO  
 
 class _WiserElectricalDevice(_WiserDevice):
     """Class representing a wiser electrical device"""
