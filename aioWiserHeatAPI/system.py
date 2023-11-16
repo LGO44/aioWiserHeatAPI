@@ -81,6 +81,18 @@ class _WiserSystem(object):
         self._timezone_offset = self._system_data.get("TimeZoneOffset")
         self._valve_protection_enabled = self._system_data.get("ValveProtectionEnabled")
 
+#Added by LGO
+        #Summer comfort
+        self._summer_comfort_enabled = self._system_data.get("SummerComfortEnabled")
+        self._indoor_discomfort_temperature = self._system_data.get(
+            "IndoorDiscomfortTemperature")
+        self._outdoor_discomfort_temperature = self._system_data.get(
+            "OutdoorDiscomfortTemperature")
+        self._summer_comfort_available = self._system_data.get("SummerComfortAvailable")
+        self._summer_discomfort_prevention = self._system_data.get("SummerDiscomfortPrevention")
+        
+#End Added by LGO
+
     def _get_system_device(self, device_data: dict):
         for device in device_data:
             # Add controller to sytem class
@@ -278,6 +290,68 @@ class _WiserSystem(object):
     def node_id(self) -> int:
         """Get zigbee node id of device"""
         return self._device_data.get("NodeId", 0)
+      
+#Added LGO
+
+    @property
+    def summer_comfort_enabled(self) -> bool:
+        """Get or set whether summer comfort mode is enabled"""
+        return self._summer_comfort_enabled
+
+    async def set_summer_comfort_enabled(self, enabled: bool):
+        if await self._send_command({"SummerComfortEnabled": enabled}):
+            self._summer_comfort_enabled = enabled
+            return True
+        
+    @property
+    def indoor_discomfort_temperature(self) -> float:
+        """Get or set indoor discomfort temperature for summer comfort"""
+        return tf._from_wiser_temp(self._indoor_discomfort_temperature)
+
+    async def set_indoor_discomfort_temperature(self, temp: float):
+        temp = tf._to_wiser_temp(temp)
+        if await self._send_command({"IndoorDiscomfortTemperature": temp}):
+            self._away_mode_target_temperature = tf._to_wiser_temp(temp)
+            return True
+    @property
+    def outdoor_discomfort_temperature(self) -> float:
+        """Get or set outdoor discomfort temperature for summer comfort"""
+        return tf._from_wiser_temp(self._outdoor_discomfort_temperature)
+
+    async def set_outdoor_discomfort_temperature(self, temp: float):
+        temp = tf._to_wiser_temp(temp)
+        if await self._send_command({"OutdoorDiscomfortTemperature": temp}):
+            self._away_mode_target_temperature = tf._to_wiser_temp(temp)
+            return True
+        
+    @property
+    def summer_comfort_available(self) -> bool:
+        """Get  whether summer comfort mode is available"""
+        return self._summer_comfort_available
+    
+    @property
+    def summer_discomfort_prevention(self) -> bool:
+        """Get whether summer discomfort prevention"""
+        return self._summer_discomfort_prevention
+
+    async def set_summer_discomfort_prevention(self, enabled: bool):
+        if await self._send_command({"SummerDiscomfortPrevention": enabled}):
+            self._summer_discomfort_prevention = enabled
+            return True
+
+    
+
+# Device type Zigbee
+    @property
+    def type_comm(self) -> str:
+        """Get type of zigbee device """
+        return self._device_data.get("Type", TEXT_UNKNOWN)  
+# UUID Zigbee
+    @property
+    def uuid(self) -> str:
+        """Get UUID zigbee"""
+        return self._device_data.get("UUID", TEXT_UNKNOWN)
+#End Added LGO
 
     @property
     def opentherm(self) -> _WiserOpentherm:
