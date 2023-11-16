@@ -3,15 +3,9 @@ import inspect
 from datetime import datetime
 from typing import Union
 
+from aioWiserHeatAPI.helpers.capabilities import _WiserClimateCapabilities
 
 from . import _LOGGER
-
-from .devices import _WiserDeviceCollection
-from .helpers.misc import is_value_in_list
-from .helpers.temp import _WiserTemperatureFunctions as tf
-from .rest_controller import _WiserRestController, WiserRestActionEnum
-from .schedule import _WiserSchedule, _WiserScheduleCollection
-
 from .const import (
     DEFAULT_BOOST_DELTA,
     TEMP_MINIMUM,
@@ -26,171 +20,12 @@ from .const import (
     WiserHeatingModeEnum,
     WiserPresetOptionsEnum,
 )
+from .devices import _WiserDeviceCollection
+from .helpers.misc import is_value_in_list
+from .helpers.temp import _WiserTemperatureFunctions as tf
+from .rest_controller import WiserRestActionEnum, _WiserRestController
+from .schedule import _WiserSchedule, _WiserScheduleCollection
 
-#Added by LGO
-class _WiserClimateCapabilities(object):
-    """Data structure for climate capalbilities of a room"""
-
-    def __init__(self, room_instance, data: dict):
-        self._room_instance = room_instance
-        self._data = data
-
-    @property
-    def heating_supported(self) -> bool:
-        """Get heating supported value"""
-        if self._data:
-            return self._data.get("HeatingSupported")
-        return None
-
-    async def set_heating_supported(self, supported: bool):
-        """Set heating supported"""
-        return await self._room_instance._send_command(
-            {"HeatingSupported": supported}
-        )
-    @property
-    def cooling_supported(self) -> bool:
-        """Get cooling supported value"""
-        if self._data:
-            return self._data.get("CoolingSupported")
-        return None
-
-    async def set_cooling_supported(self, supported: bool):
-        """Set cooling supported"""
-        return await self._room_instance._send_command(
-            {"CoolingSupported": supported}
-        )
-    
-    @property
-    def minimum_heat_set_point(self) -> int:
-        """Get minimum heat setpoint value"""
-        if self._data:
-            return self._data.get("MinimumHeatSetpoint")
-        return None
-
-    async def set_minimum_heat_set_point(self, temp: int):
-        """Set minimum heat setpoint value"""
-        return await self._room_instance._send_command(
-            {"MinimumHeatSetpoint": temp, "MaximumHeatSetpoint": self.maximum_heat_set_point}    
-        )
-    
-    @property
-    def maximum_heat_set_point(self) -> int:
-        """Get maximum heat setpoint value"""
-        if self._data:
-            return self._data.get("MaximumHeatSetpoint")
-        return None
-
-    async def set_minimum_heat_set_point(self, temp: int):
-        """Set maximum heat setpoint value"""
-        return await self._room_instance._send_command(
-            {"MaximumHeatSetpoint": temp, "MinimumHeatSetpoint": self.maximum_heat_set_point}    
-        )
-    
-    @property
-    def minimum_cool_set_point(self) -> int:
-        """Get minimum cool setpoint value"""
-        if self._data:
-            return self._data.get("MinimumCoolSetpoint")
-        return None
-
-    async def set_minimum_cool_set_point(self, temp: int):
-        """Set minimum cool setpoint value"""
-        return await self._room_instance._send_command(
-            {"MinimumCoolSetpoint": temp, "MaximumCoolSetpoint": self.maximum_cool_set_point}    
-        )   
-    
-    @property
-    def maximum_cool_set_point(self) -> int:
-        """Get maximum cool setpoint value"""
-        if self._data:
-            return self._data.get("MaximumCoolSetpoint")
-        return None
-
-    async def set_minimum_cool_set_point(self, temp: int):
-        """Set maximum cool setpoint value"""
-        return await self._room_instance._send_command(
-            {"MaximumCoolSetpoint": temp, "MinimumCoolSetpoint": self.maximum_cool_set_point}    
-        ) 
-    
-    @property
-    def setpoint_step(self) -> int:
-        """Get setpoint step value"""
-        if self._data:
-            return self._data.get("SetpointStep")
-        return None
-
-    async def set_minimum_cool_set_point(self, temp: int):
-        """Set setpoint step value"""
-        return await self._room_instance._send_command(
-            {"SetpointStep": temp}    
-        ) 
-    
-    @property
-    def ambient_temperature(self) -> bool:
-        """Get ambient temperature value"""
-        if self._data:
-            return self._data.get("AmbientTemperature")
-        return None
-
-    async def set_ambient_temperature(self, tmp: bool):
-        """Set ambient temperature value"""
-        return await self._room_instance._send_command(
-            {"AmbientTemperature": tmp}    
-        ) 
-
-    @property
-    def temperature_control(self) -> bool:
-        """Get temperature control value"""
-        if self._data:
-            return self._data.get("TemperatureControl")
-        return None
-
-    async def set_temperature_control(self, tmp: bool):
-        """Set temperature control value"""
-        return await self._room_instance._send_command(
-            {"TemperatureControl": tmp}    
-        ) 
-
-    @property
-    def open_window_detection(self) -> bool:
-        """Get open window detection value"""
-        if self._data:
-            return self._data.get("OpenWindowDetection")
-        return None
-
-    async def set_open_window_detection(self, tmp: bool):
-        """Set open window detection value"""
-        return await self._room_instance._send_command(
-            {"OpenWindowDetection": tmp}    
-        ) 
-
-    @property
-    def hydronic_channel_selection(self) -> bool:
-        """Get hydronic channel selection value"""
-        if self._data:
-            return self._data.get("HydronicChannelSelection")
-        return None
-
-    async def set_open_window_detection(self, tmp: bool):
-        """Set hydronic channel selection value"""
-        return await self._room_instance._send_command(
-            {"HydronicChannelSelection": tmp}    
-        ) 
-
-    @property
-    def on_off_supported(self) -> bool:
-        """Get on off supported value"""
-        if self._data:
-            return self._data.get("OnOffSupported")
-        return None
-
-    async def set_on_off_supported(self, supported: bool):
-        """Set on off supported value"""
-        return await self._room_instance._send_command(
-            {"OnOffSupported": supported}
-        )
-
-#End Added by LGO
 
 class _WiserRoom(object):
     """Class representing a Wiser Room entity"""
@@ -389,6 +224,12 @@ class _WiserRoom(object):
         self._boost_temperature_delta = temperature_delta
 
     @property
+    def capabilities(self) -> _WiserClimateCapabilities:
+        """Get room climate capabilities"""
+        if capabilities := self._data.get("ClimateCapabilities"):
+            return _WiserClimateCapabilities(self, capabilities)
+
+    @property
     def comfort_mode_score(self) -> int:
         """Get room heating comfort mode score"""
         return self._data.get("ComfortModeScore", 0)
@@ -460,12 +301,6 @@ class _WiserRoom(object):
     def id(self) -> int:
         """Get the id of the room"""
         return self._data.get("id")
-
-    @property
-    def climate_capabilities(self) -> _WiserClimateCapabilities:
-        """Get open and close time drive config"""
-        return _WiserClimateCapabilities(self, self._data.get("ClimateCapabilities"))
-
 
     @property
     def is_away_mode(self) -> bool:
@@ -671,7 +506,7 @@ class _WiserRoom(object):
     def underfloor_heating_relay_ids(self) -> int:
         """Get the id of the underfloor heating controller relay ids"""
         return sorted(self._data.get("UfhRelayIds", []))
-
+    
 #Added by LGO
     @property
     def include_in_summer_comfort(self) -> bool:
@@ -715,6 +550,7 @@ class _WiserRoom(object):
 
     
 #End Added by LGO
+
     @property
     def window_detection_active(self) -> bool:
         """Get or set if window detection is active"""
