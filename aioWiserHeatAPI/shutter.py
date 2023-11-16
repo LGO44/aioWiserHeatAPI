@@ -124,7 +124,7 @@ class _WiserShutter(_WiserElectricalDevice):
                 self._device_type_data = result
         if result:
             _LOGGER.debug(
-                "Wiser smart plug - {} command successful".format(
+                "Wiser shutter- {} command successful".format(
                     inspect.stack()[1].function
                 )
             )
@@ -201,12 +201,12 @@ class _WiserShutter(_WiserElectricalDevice):
     @property
     def is_lift_position_supported(self) -> bool:
         """Get if the shutter is open"""
-        return  self._device_type_data.get("IsLiftPositionSupported") 
+        return  self._device_type_data.get("IsLiftPositionSupported",False) 
 
     @property
     def is_tilt_supported(self) -> bool:
         """Get if the shutter is open"""
-        return  self._device_type_data.get("IsTiltSupported") 
+        return  self._device_type_data.get("IsTiltSupported",False) 
 #End Added by LGO
 
     @property
@@ -260,17 +260,32 @@ class _WiserShutter(_WiserElectricalDevice):
     @property
     def respect_summer_comfort(self) -> bool:
         """Get if the shutter respect summer comfort"""
-        return  self._device_type_data.get("RespectSummerComfort") 
+        return  self._device_type_data.get("RespectSummerComfort",False) 
+    
+    async def set_respect_summer_comfort(self, en: bool):
+        """Set respect summer comfort"""
+        if await self._send_command({"RespectSummerComfort": en }):
+            return True
     
     @property
     def summer_comfort_lift(self) -> int:
         """Get the shutter summer comfort lift"""
         return  self._device_type_data.get("SummerComfortLift") 
 
+    async def set_summer_comfort_lift(self, lift: int):
+        if await self._send_command({"SummerComfortLift": lift}):
+            self._summer_comfort_lift = lift
+            return True
+        
     @property
     def summer_comfort_tilt(self) -> int:
         """Get the shutter summer comfort tilt """
         return  self._device_type_data.get("SummerComfortTilt") 
+    
+    async def set_summer_comfort_tilt(self, tilt: int):
+        if await self._send_command({"SummerComfortTilt": tilt}):
+            self._summer_comfort_tilt = tilt
+            return True
 
 #End Added by LGO
 
@@ -296,7 +311,7 @@ class _WiserShutter(_WiserElectricalDevice):
 #Added by LGO
 
     async def open_tilt(self, percentage: int = 90):
-        """Fully open shutter"""
+        """Fully open tilt shutter"""
         if percentage >= 0 and percentage <= 90:
             return await self._send_command(
                 {"RequestAction": {"Action": "TiltTo", "Percentage": percentage}}
@@ -305,13 +320,13 @@ class _WiserShutter(_WiserElectricalDevice):
             raise ValueError(f"Shutter percentage must be between 0 and 100")
 
     async def close_tilt(self):
-        """Fully close shutter"""
+        """Fully close tilt shutter"""
         return await self._send_command(
             {"RequestAction": {"Action": "TiltTo", "Percentage": 0}}
         )
 
     async def stop_tilt(self):
-        """Stop shutter during movement"""
+        """Stop shutter during tilt movement"""
         return await self._send_command({"RequestAction": {"Action": "StopTilt"}})
 
 #End Added by LGO
