@@ -228,6 +228,7 @@ class _WiserRoom(object):
         """Get room climate capabilities"""
         if capabilities := self._data.get("ClimateCapabilities"):
             return _WiserClimateCapabilities(self, capabilities)
+        return False
 
     @property
     def comfort_mode_score(self) -> int:
