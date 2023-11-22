@@ -514,6 +514,11 @@ class _WiserRoom(object):
         """Get the status of participate to the summer comfort (position the shutters)"""
         return self._data.get("IncludeInSummerComfort", False)
 
+    async def set_include_in_summer_comfort(self, enabled: bool):
+        if await self._send_command({"IncludeInSummerComfort": enabled}):
+            self._include_in_summer_comfort = enabled
+            return True
+
     @property
     def hvac_mode(self) -> str:
         """Get the HVAC mode of the room """
