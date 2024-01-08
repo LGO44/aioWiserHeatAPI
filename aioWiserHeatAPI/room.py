@@ -3,15 +3,9 @@ import inspect
 from datetime import datetime
 from typing import Union
 
+from aioWiserHeatAPI.helpers.capabilities import _WiserClimateCapabilities
 
 from . import _LOGGER
-
-from .devices import _WiserDeviceCollection
-from .helpers.misc import is_value_in_list
-from .helpers.temp import _WiserTemperatureFunctions as tf
-from .rest_controller import _WiserRestController, WiserRestActionEnum
-from .schedule import _WiserSchedule, _WiserScheduleCollection
-
 from .const import (
     DEFAULT_BOOST_DELTA,
     TEMP_MINIMUM,
@@ -26,6 +20,11 @@ from .const import (
     WiserHeatingModeEnum,
     WiserPresetOptionsEnum,
 )
+from .devices import _WiserDeviceCollection
+from .helpers.misc import is_value_in_list
+from .helpers.temp import _WiserTemperatureFunctions as tf
+from .rest_controller import WiserRestActionEnum, _WiserRestController
+from .schedule import _WiserSchedule, _WiserScheduleCollection
 
 
 class _WiserRoom(object):
@@ -223,6 +222,13 @@ class _WiserRoom(object):
 
     def set_boost_temperature_delta(self, temperature_delta: float):
         self._boost_temperature_delta = temperature_delta
+
+    @property
+    def capabilities(self) -> _WiserClimateCapabilities:
+        """Get room climate capabilities"""
+        if capabilities := self._data.get("ClimateCapabilities"):
+            return _WiserClimateCapabilities(self, capabilities)
+        return False
 
     @property
     def comfort_mode_score(self) -> int:
@@ -501,6 +507,55 @@ class _WiserRoom(object):
     def underfloor_heating_relay_ids(self) -> int:
         """Get the id of the underfloor heating controller relay ids"""
         return sorted(self._data.get("UfhRelayIds", []))
+    
+#Added by LGO
+    @property
+    def include_in_summer_comfort(self) -> bool:
+        """Get the status of participate to the summer comfort (position the shutters)"""
+        return self._data.get("IncludeInSummerComfort", False)
+
+    async def set_include_in_summer_comfort(self, enabled: bool):
+        if await self._send_command({"IncludeInSummerComfort": enabled}):
+            self._include_in_summer_comfort = enabled
+            return True
+
+    @property
+    def hvac_mode(self) -> str:
+        """Get the HVAC mode of the room """
+        return self._data.get("HVACMode", TEXT_UNKNOWN)
+    
+    @property
+    def floor_sensor_state(self) -> str:
+        """Get the state of the floor sensor """
+        return self._data.get("FloorSensorState", TEXT_UNKNOWN)
+    
+    @property
+    def occupancy(self) -> str:
+        """Get the occupancy of the room """
+        return self._data.get("Occupancy", TEXT_UNKNOWN)
+    
+    @property
+    def occupancy_capable(self) -> bool:
+        """Get the occupancy of the room """
+        return self._data.get("OccupancyCapable", False)
+    
+    @property
+    def occupied_heating_set_point(self) -> int:
+        """Get the setpoint when the room is occupied """
+        return self._data.get("OccupiedHeatingSetPoint", 85)
+
+    @property
+    def unoccupied_heating_set_point(self) -> int:
+        """Get the setpoint when the room is unoccupied """
+        return self._data.get("UnoccupiedHeatingSetPoint", 65)
+    
+    @property
+    def climate_demand_for_ui(self) -> int:
+        """Get the climate demand for UI """
+        return self._data.get("ClimateDemandForUI", 0)
+
+    
+#End Added by LGO
 
     @property
     def window_detection_active(self) -> bool:

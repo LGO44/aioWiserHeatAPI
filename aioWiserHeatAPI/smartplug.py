@@ -1,7 +1,7 @@
 from . import _LOGGER
 
 from .helpers.device import _WiserElectricalDevice
-
+from .helpers.equipment import _WiserEquipment
 from .const import TEXT_UNKNOWN, TEXT_OFF, TEXT_ON, WiserDeviceModeEnum
 
 import inspect
@@ -18,7 +18,23 @@ class _WiserSmartPlug(_WiserElectricalDevice):
     @property
     def delivered_power(self) -> int:
         """Get the amount of current throught the plug over time"""
-        return self._device_type_data.get("CurrentSummationDelivered", -1)
+        return self._device_type_data.get("CurrentSummationDelivered", 0)
+    
+#added by LGO
+    @property
+    def equipment_id(self) -> int:
+        """Get equipment id (v2 hub)"""
+        return self._device_type_data.get("EquipmentId", 0)
+
+    @property
+    def equipment(self) -> str:
+        """Get equipment data"""
+        return (
+            _WiserEquipment(self._device_type_data.get("EquipmentData"))
+            if self._device_type_data.get("EquipmentData")
+            else None
+        )
+#End Added by LGO
 
     @property
     def instantaneous_power(self) -> int:
