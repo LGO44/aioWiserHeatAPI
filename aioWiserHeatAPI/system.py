@@ -20,7 +20,7 @@ from .rest_controller import _WiserRestController
 #Added by LGO
  
 from .helpers.equipment import _WiserEquipment
-
+from .helpers.weather import _WiserWeather
 
 class _WiserSystem(object):
     """Class representing a Wiser Hub device"""
@@ -62,7 +62,8 @@ class _WiserSystem(object):
         self._zigbee_data = _WiserZigbee(self._data.get("Zigbee", {}))
 
         # Added by LGO 
- 
+        # Weather       
+        self._weather_data = _WiserWeather(self._data.get("Weather", {}))  
         # Equipment
         self._equipment_data = _WiserEquipment(self._data.get("Equipment", {}))
 
@@ -346,6 +347,11 @@ class _WiserSystem(object):
         if await self._send_command({"SummerComfortEnabled": enabled}):
             self._summer_comfort_enabled = enabled
             return True
+
+    @property
+    def weather(self) -> _WiserWeather:
+        """Get weather info"""
+        return self._weather_data
 
     # Wiser app V7 seasonnal comfort
     
