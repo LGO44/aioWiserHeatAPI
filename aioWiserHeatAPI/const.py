@@ -72,6 +72,8 @@ TEXT_ALWAYSOFF = "AlwaysOff"
 TEXT_LASTON = "LastOnBrightness"
 TEXT_LEVELPERCENT = "LevelPercent"
 
+TEXT_RL_LED = "RL_LED"
+
 #enable notification for WindowDoor
 TEXT_NONE= "None"
 TEXT_ONEITHER= "OnEither"
@@ -161,6 +163,9 @@ class WiserLightLedIndicatorEnum(enum.Enum):
 class WiserLightPowerOnBehaviourEnum(enum.Enum):
     last = TEXT_LASTON
     levelpercent = TEXT_LEVELPERCENT
+class WiserLightOutputModeEnum(enum.Enum): 
+    auto = TEXT_AUTO
+    rl_led = TEXT_RL_LED 
 
 class WiserWindowDoorEnableNotificationEnum(enum.Enum):
     oneither= TEXT_ONEITHER 
