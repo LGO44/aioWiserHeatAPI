@@ -120,6 +120,7 @@ WISERBOILERINTERFACE = "BoilerInterface/{}"
 WISERBUTTONPANEL = "ButtonPanel/{}"
 WISERTHRESHOLDSENSOR = "ThresholdSensor/{}"
 WISERUICONFIGURATION = "UIConfiguration/{}"
+WISEREQUIPMENT = "Equipment/{}"
 WISERAUTOMATION = "Automation/{}"
 
 # Enums
